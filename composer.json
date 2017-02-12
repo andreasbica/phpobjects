@@ -1,5 +1,6 @@
 {
   "name": "bica/phpobjects",
+  "version": "0.4.0",
   "description": "A helpful object library.",
   "homepage": "http://github.com/andreasbica/phpobjects",
   "type": "library",
