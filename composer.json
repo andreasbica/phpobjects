@@ -1,5 +1,5 @@
 {
-  "name": "phpobjects/phpobjects",
+  "name": "bica/phpobjects",
   "description": "A helpful object library.",
   "homepage": "http://github.com/andreasbica/phpobjects",
   "type": "library",
@@ -14,8 +14,7 @@
   "authors": [
     {
       "name": "Andreas Bica",
-      "email": "abi.social@me.com",
-      "role": "lead"
+      "email": "abi.social@me.com"
     }
   ],
   "support": {

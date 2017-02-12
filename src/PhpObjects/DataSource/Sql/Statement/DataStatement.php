@@ -1,10 +1,10 @@
 <?php
 
-namespace PhpObjects\DataSource\Bind;
+namespace PhpObjects\DataSource\Sql\Statement;
 
-use PhpObjects\DataSource\SqlBound;
+use PhpObjects\DataSource\Sql\Bind\SqlDataBind;
 
-class Data
+class DataStatement
 {
 
     const CAST_VALUE = '!CASTVALUE';
@@ -21,28 +21,23 @@ class Data
     {
     }
 
-
     /**
+     * @param array $dataList
      * @return $this
      */
-    public static function create()
+    public function setBinding( array $dataList )
     {
-        return new self();
-    }
-
-
-    public static function createFromArray( array $dataList )
-    {
-        $self = self::create();
-
         foreach ( $dataList as $field => $value ) {
-            $self->addData($field, $value);
+            $this->addData($field, $value);
         }
-
-        return $self;
+        return $this;
     }
 
-
+    /**
+     * @param string $field
+     * @param string $value
+     * @return $this
+     */
     public function addData( $field, $value )
     {
         $this->_dataList[ $field ] = $value;
@@ -73,9 +68,9 @@ class Data
 
     /**
      * @param  string $sqlOperation
-     * @return SqlBound
+     * @return SqlDataBind
      */
-    public function getSqlBound( $sqlOperation = '' )
+    public function getSqlDataBind( $sqlOperation = '' )
     {
         $sql = '';
         $castValueList = $sqlItemList = $binding = [];
@@ -101,7 +96,7 @@ class Data
             $sql = implode(', ', $sqlItemList);
         }
 
-        return SqlBound::create($sql, $binding);
+        return new SqlDataBind($sql, $binding);
     }
 
 
@@ -109,9 +104,9 @@ class Data
      * @param  string $sqlOperation One of SQL_OPERATION_*.
      * @return string
      */
-    public function getSqlResolved( $sqlOperation = '' )
+    public function getResolvedSql( $sqlOperation = '' )
     {
-        return $this->getSqlBound($sqlOperation)->getSql(true);
+        return $this->getSqlDataBind($sqlOperation)->getSql(true);
     }
 
 

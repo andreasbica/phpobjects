@@ -1,8 +1,8 @@
 <?php
 
-namespace PhpObjects\DataSource\Bind;
+namespace PhpObjects\DataSource\Sql\Statement;
 
-class Column
+class ColumnStatement
 {
 
     private $_columnList = [];
@@ -12,28 +12,22 @@ class Column
     {
     }
 
+    /**
+     * @param array $columnList
+     * @return $this
+     */
+    public function setBinding( array $columnList )
+    {
+        foreach ( $columnList as $field ) {
+            $this->addColumn($field);
+        }
+        return $this;
+    }
 
     /**
-     * @return Column
+     * @param string $field
+     * @return $this
      */
-    public static function create()
-    {
-        return new self();
-    }
-
-
-    public static function createFromArray( array $columnList )
-    {
-        $self = self::create();
-
-        foreach ( $columnList as $field ) {
-            $self->addColumn($field);
-        }
-
-        return $self;
-    }
-
-
     public function addColumn( $field )
     {
         $this->_columnList[] = $field;
@@ -53,7 +47,7 @@ class Column
     /**
      * @return string
      */
-    public function getSqlResolved()
+    public function getResolvedSql()
     {
         return implode(', ', $this->getBinding());
     }
