@@ -1,5 +1,5 @@
 {
-  "name": "bica/phpobjects",
+  "name": "phpobjects/phpobjects",
   "description": "A helpful object library.",
   "type": "library",
   "keywords": [
@@ -25,7 +25,7 @@
   },
   "autoload": {
     "psr-4": {
-      "PhpObjects\\": "src/PhpObjects/"
+      "PhpObjects\\": "src/PhpObjects"
     }
   }
 }
