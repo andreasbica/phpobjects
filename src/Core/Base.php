@@ -45,7 +45,6 @@ abstract class Base
             $output = $label . '' . $output . PHP_EOL;
         } else {
             $encode = mb_detect_encoding($output);
-            #$string = PhpObjects_PartnerCore_Formatter_ToEncodingMapper::UTF_8()->cast($output);
             $string = ($encode == 'UTF-8' ? $output : utf8_decode($output));
             $output = '<pre>' . $label . htmlentities($string, ENT_QUOTES) . '</pre>';
         }
