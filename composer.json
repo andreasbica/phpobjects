@@ -1,6 +1,7 @@
 {
   "name": "phpobjects/phpobjects",
   "description": "A helpful object library.",
+  "homepage": "http://github.com/andreasbica/phpobjects",
   "type": "library",
   "keywords": [
     "typecast",
