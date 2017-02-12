@@ -1,6 +1,5 @@
 {
   "name": "phpobjects/phpobjects",
-  "version": "1.0",
   "description": "A helpful object library.",
   "homepage": "http://github.com/andreasbica/phpobjects",
   "type": "library",
