@@ -24,9 +24,11 @@
   "require": {
     "php": "^5.4"
   },
+  "require-dev": {},
   "autoload": {
     "psr-4": {
       "PhpObjects\\": "src/PhpObjects"
     }
-  }
+  },
+  "autoload-dev": {}
 }
