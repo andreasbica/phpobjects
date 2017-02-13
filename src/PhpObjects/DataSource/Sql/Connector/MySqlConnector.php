@@ -2,6 +2,10 @@
 
 namespace PhpObjects\DataSource\Sql\Connector;
 
+use PhpObjects\DataSource\Sql\Statement\Builder\DeleteStatementBuilder;
+use PhpObjects\DataSource\Sql\Statement\Builder\InsertStatementBuilder;
+use PhpObjects\DataSource\Sql\Statement\Builder\SelectStatementBuilder;
+use PhpObjects\DataSource\Sql\Statement\Builder\UpdateStatementBuilder;
 use PhpObjects\DataSource\Sql\Statement\DataStatement;
 use PhpObjects\DataSource\Sql\Statement\ColumnStatement;
 use PhpObjects\DataSource\Sql\Statement\OrderClauseStatement;
@@ -127,7 +131,7 @@ class MySqlConnector implements ConnectorInterface
     /**
      * @inheritdoc
      */
-    final public function executeWithSqlDataBind( SqlDataBind $boundSql, $onlyFirstRow = false, $case = CASE_LOWER )
+    final public function executeWithSqlDataBind( SqlDataBind $boundSql, $onlyFirstRow = false, $case = null )
     {
         $sql = $boundSql->getSql(true);
         return $this->execute($sql, [], $onlyFirstRow, $case);
@@ -137,33 +141,11 @@ class MySqlConnector implements ConnectorInterface
      * @inheritdoc
      */
     public function buildSelectStatement(
-        $schema,
-        $table,
-        ColumnStatement $columnBind = null,
-        WhereClauseStatement $whereClauseBind = null,
-        OrderClauseStatement $orderClauseBind = null,
+        $schema, $table,
+        ColumnStatement $columnBind = null, WhereClauseStatement $whereClauseBind = null,  OrderClauseStatement $orderClauseBind = null,
         array $rowCount = [0, 0]
     ) {
-        $fieldNameList = ($columnBind ? $columnBind->getBinding() : []);
-        $fieldlistString = (empty($fieldNameList)) ? '*' : implode(', ', $fieldNameList);
-        $tableString = ($schema ? strtolower($schema) . '.' . $table : $table);
-
-        $sql = "SELECT $fieldlistString FROM $tableString";
-        $binding = [];
-
-        if ( ($whereSql = ($whereClauseBind ? $whereClauseBind->getSqlDataBind()->getSql() : '')) ) {
-            $binding = $whereClauseBind->getSqlDataBind()->getBinding();
-            $sql .= $whereSql;
-        }
-
-        if ( ($orderSql = ($orderClauseBind ? $orderClauseBind->getResolvedSql() : '')) ) {
-            $sql .= $orderSql;
-        }
-
-        $boundSql = new SqlDataBind($sql, $binding);
-        $boundSql = $this->_appendRownumClause($boundSql, $rowCount);
-
-        return $boundSql;
+        return (new SelectStatementBuilder(self::TYPE))->build($schema, $table, $columnBind, $whereClauseBind, $orderClauseBind, $rowCount);
     }
 
     /**
@@ -171,19 +153,7 @@ class MySqlConnector implements ConnectorInterface
      */
     public function buildInsertStatement( $schema, $table, DataStatement $dataBind )
     {
-        $keys = $insertSql = '';
-        $tableString = ($schema ? strtolower($schema) . '.' . $table : $table);
-        $dataSqlBound = $dataBind->getSqlDataBind(DataStatement::SQL_OPERATION_INSERT);
-        $binding = $dataSqlBound->getBinding();
-
-        if ( $dataSqlBound ) {
-            $keys = implode(', ', array_keys($dataBind->getBinding()));
-            $insertSql = $dataSqlBound->getSql();
-        }
-
-        $sql = "INSERT INTO $tableString (" . $keys . ') VALUES (' . $insertSql . ')';
-
-        return new SqlDataBind($sql, $binding);
+        return (new InsertStatementBuilder(self::TYPE))->build($schema, $table, $dataBind);
     }
 
     /**
@@ -191,20 +161,7 @@ class MySqlConnector implements ConnectorInterface
      */
     public function buildUpdateStatement( $schema, $table, DataStatement $dataBind, WhereClauseStatement $whereClauseBind = null )
     {
-        $tableString = ($schema ? strtolower($schema) . '.' . $table : $table);
-        $dataSqlBound = $dataBind->getSqlDataBind(DataStatement::SQL_OPERATION_UPDATE);
-
-        $sql = "UPDATE $tableString SET ";
-        $sql .= $dataSqlBound->getSql();
-
-        $binding = $dataSqlBound->getBinding();
-
-        if ( $whereClauseBind ) {
-            $sql .= $whereClauseBind->getSqlDataBind()->getSql();
-            $binding = array_merge($binding, $whereClauseBind->getSqlDataBind()->getBinding());
-        }
-
-        return new SqlDataBind($sql, $binding);
+        return (new UpdateStatementBuilder(self::TYPE))->build($schema, $table, $dataBind, $whereClauseBind);
     }
 
     /**
@@ -212,43 +169,7 @@ class MySqlConnector implements ConnectorInterface
      */
     public function buildDeleteStatement( $schema, $table, WhereClauseStatement $whereClauseBind = null )
     {
-        $tableString = ($schema ? strtolower($schema) . '.' . $table : $table);
-        $sql = "DELETE FROM $tableString";
-        $binding = [];
-
-        if ( $whereClauseBind ) {
-            $sql .= $whereClauseBind->getSqlDataBind()->getSql();
-            $binding = $whereClauseBind->getSqlDataBind()->getBinding();
-        }
-
-        return new SqlDataBind($sql, $binding);
-    }
-
-    /**
-     * @param  SqlDataBind $boundSql
-     * @param  array $rowCount
-     * @return SqlDataBind
-     */
-    private function _appendRownumClause( SqlDataBind $boundSql, array $rowCount )
-    {
-        $limit = '';
-
-        if ( is_array($rowCount) ) {
-            if ( array_key_exists(0, $rowCount) && $rowCount[ 0 ] != 0 ) {
-                $limit .= $rowCount[ 0 ];
-
-                if ( array_key_exists(1, $rowCount) && $rowCount[ 1 ] != 0 && $rowCount[ 1 ] > $rowCount[ 0 ] ) {
-                    $limit .= ', ' . $rowCount[ 1 ];
-                }
-            }
-        }
-
-        if ( $limit ) {
-            $bindSql = $boundSql->getSql() . ' LIMIT ' . $limit;
-            $boundSql = new SqlDataBind($bindSql, $boundSql->getBinding());
-        }
-
-        return $boundSql;
+        return (new DeleteStatementBuilder(self::TYPE))->build($schema, $table, $whereClauseBind);
     }
 
     /**
@@ -272,7 +193,7 @@ class MySqlConnector implements ConnectorInterface
      * @param  int $case CASE_UPPER | CASE_LOWER
      * @return array
      */
-    public function getDescribeTable( $table, $case = CASE_LOWER )
+    public function getDescribeTable( $table, $case = null )
     {
         $result = $this->execute('describe ' . $table, [], false, $case);
 
