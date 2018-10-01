@@ -21,13 +21,13 @@
     "issues": "https://github.com/andreasbica/phpobjects/issues"
   },
   "require": {
-    "php": "^5.4"
+    "php": ">=5.4"
   },
   "require-dev": {
   },
   "autoload": {
     "psr-4": {
-      "PhpObjects\\": "src/PhpObjects"
+      "PhpObjects\\": "src/PhpObjects/"
     }
   },
   "autoload-dev": {
