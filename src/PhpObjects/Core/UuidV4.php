@@ -5,15 +5,21 @@ namespace PhpObjects\Core;
 class UuidV4
 {
 
+    const LENGTH_DEFAULT = 36;
+
     /**
      * @var string
      */
     private $_uuid = '';
 
 
-    public function __construct()
+    public function __construct($length = self::LENGTH_DEFAULT)
     {
         $this->_uuid = $this->_generate();
+
+        if ($length > 0 && $length != self::LENGTH_DEFAULT) {
+            $this->_uuid = substr($this->_uuid, 0, $length);
+        }
     }
 
     private function _generate()
